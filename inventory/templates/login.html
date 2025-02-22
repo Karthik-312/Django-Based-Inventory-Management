@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}{{ register }} {% endblock %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<nav class="navbar navbar-expand-lg bg-light">
+    <div class="container">
+        <ul class="navbar-nav ml-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{% url 'register' %}">Register</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="{% url 'login' %}">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-3">
+            <h4>Login</h4>
+            <hr>
+            <form method="POST">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <br>
+                <input class="btn btn-info" type="submit" value="Login">
+            </form>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
