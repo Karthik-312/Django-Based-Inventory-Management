@@ -35,7 +35,7 @@ git clone https://github.com/yourusername/inventory-management-system.git
 cd inventory-management-system
 
 # Create a virtual environment
-python -m venv env
+python -m venv env 
 source env/bin/activate  # for Windows: env\Scripts\activate
 
 # Install dependencies
