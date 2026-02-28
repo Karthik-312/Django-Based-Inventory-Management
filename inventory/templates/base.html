@@ -1,92 +1,456 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}{% endblock %}</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+  <title>{% block title %}Dashboard{% endblock %} - InvenTrack</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sidebar-w: 260px;
+      --sidebar-bg: #1e293b;
+      --sidebar-hover: #334155;
+      --primary: #4361ee;
+      --primary-light: #6366f1;
+      --bg-main: #f1f5f9;
+      --text-dark: #1e293b;
+      --text-muted: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #06b6d4;
+    }
+
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: var(--bg-main);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      min-height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      transition: transform .3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar .brand {
+      padding: 1.5rem 1.25rem;
+      color: #fff;
+      font-size: 1.35rem;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255, 255, 255, .08);
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+
+    .sidebar .brand i {
+      font-size: 1.6rem;
+      color: var(--primary);
+    }
+
+    .sidebar .nav-section {
+      padding: .75rem 0;
+    }
+
+    .sidebar .nav-section-title {
+      padding: .5rem 1.5rem;
+      font-size: .65rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: rgba(255, 255, 255, .35);
+      font-weight: 600;
+    }
+
+    .sidebar .nav-link {
+      color: rgba(255, 255, 255, .65);
+      padding: .7rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      transition: all .2s;
+      border-left: 3px solid transparent;
+      font-size: .88rem;
+      text-decoration: none;
+    }
+
+    .sidebar .nav-link:hover {
+      color: #fff;
+      background: var(--sidebar-hover);
+    }
+
+    .sidebar .nav-link.active {
+      color: #fff;
+      background: rgba(67, 97, 238, .15);
+      border-left-color: var(--primary);
+    }
+
+    .sidebar .nav-link i {
+      font-size: 1.1rem;
+      width: 24px;
+      text-align: center;
+    }
+
+    .main-content {
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-bar {
+      background: #fff;
+      padding: .85rem 2rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 500;
+    }
+
+    .top-bar .page-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin: 0;
+    }
+
+    .content-area {
+      padding: 1.75rem 2rem;
+      flex: 1;
+    }
+
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+      transition: box-shadow .2s;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 15px rgba(0, 0, 0, .08);
+    }
+
+    .stat-card {
+      border-left: 4px solid;
+      border-radius: 12px;
+    }
+
+    .stat-card .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+
+    .stat-card .stat-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .stat-card .stat-label {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .table {
+      margin: 0;
+    }
+
+    .table thead th {
+      background: #f8fafc;
+      font-size: .73rem;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-bottom: 2px solid #e2e8f0;
+      padding: .8rem 1rem;
+    }
+
+    .table tbody td {
+      padding: .8rem 1rem;
+      vertical-align: middle;
+      color: var(--text-dark);
+      border-bottom: 1px solid #f1f5f9;
+      font-size: .9rem;
+    }
+
+    .table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .badge-status {
+      padding: .35rem .65rem;
+      border-radius: 50px;
+      font-size: .73rem;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      border-radius: 8px;
+      padding: .5rem 1.25rem;
+      font-weight: 500;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-light);
+      border-color: var(--primary-light);
+    }
+
+    .form-control,
+    .form-select {
+      border-radius: 8px;
+      border: 1.5px solid #e2e8f0;
+      padding: .55rem .9rem;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, .12);
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: .9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .search-box input {
+      padding-left: 2.4rem;
+    }
+
+    .alert {
+      border: none;
+      border-radius: 10px;
+    }
+
+    .sidebar-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      color: var(--text-dark);
+      padding: 0;
+    }
+
+    @media (max-width:992px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .sidebar-toggle {
+        display: block;
+      }
+
+      .content-area {
+        padding: 1.25rem;
+      }
+
+      .top-bar {
+        padding: .85rem 1.25rem;
+      }
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      z-index: 999;
+    }
+
+    .sidebar-overlay.show {
+      display: block;
+    }
+
+    .auth-wrapper {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #4361ee 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .auth-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, .25);
+    }
+
+    .auth-card .brand-logo {
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+
+    .auth-card .brand-logo i {
+      font-size: 2.5rem;
+      color: var(--primary);
+    }
+
+    .auth-card .brand-logo h2 {
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-top: .5rem;
+    }
+
+    .main-footer {
+      background: #fff;
+      padding: .75rem 2rem;
+      border-top: 1px solid #e2e8f0;
+      color: var(--text-muted);
+      font-size: .82rem;
+      text-align: center;
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
 </head>
 
 <body>
-  {% if user.is_authenticated and user.is_staff and user.is_superuser%}
-  <nav class="navbar navbar-expand-lg bg-light">
-    <div class="container">
-      <a class="navbar-brand" href="{% url 'dash' %}">Dashboard</a>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'products' %}">Products</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'orders' %}">Orders</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'users' %}">Users</a>
-          </li>
-        </ul>
-        <ul class="navbar-nav ml-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'user' %}">Profile</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="{% url 'logout' %}">Logout</a>
-          </li>
-        </ul>
+  {% block body %}
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <i class="bi bi-box-seam-fill"></i>
+      <span>InvenTrack</span>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Main Menu</div>
+      <nav>
+        <a href="{% url 'dash' %}" class="nav-link {% if title == 'Dashboard' %}active{% endif %}">
+          <i class="bi bi-grid-1x2-fill"></i> Dashboard
+        </a>
+        <a href="{% url 'products' %}"
+          class="nav-link {% if title == 'Products' or title == 'Edit Product' %}active{% endif %}">
+          <i class="bi bi-box-fill"></i> Products
+        </a>
+        <a href="{% url 'orders' %}" class="nav-link {% if title == 'Orders' %}active{% endif %}">
+          <i class="bi bi-cart-fill"></i> Orders
+        </a>
+        {% if user.is_staff and user.is_superuser %}
+        <a href="{% url 'suppliers' %}"
+          class="nav-link {% if 'Supplier' in title %}active{% endif %}">
+          <i class="bi bi-truck"></i> Suppliers
+        </a>
+        <a href="{% url 'users' %}" class="nav-link {% if title == 'Users' %}active{% endif %}">
+          <i class="bi bi-people-fill"></i> Users
+        </a>
+        <a href="{% url 'activity-log' %}" class="nav-link {% if title == 'Activity Log' %}active{% endif %}">
+          <i class="bi bi-journal-text"></i> Activity Log
+        </a>
+        {% endif %}
+      </nav>
+    </div>
+    <div class="nav-section mt-auto">
+      <div class="nav-section-title">Account</div>
+      <nav>
+        <a href="{% url 'user' %}" class="nav-link {% if title == 'Profile' %}active{% endif %}">
+          <i class="bi bi-person-fill"></i> My Profile
+        </a>
+        <a href="{% url 'logout' %}" class="nav-link">
+          <i class="bi bi-box-arrow-left"></i> Logout
+        </a>
+      </nav>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="top-bar">
+      <div class="d-flex align-items-center gap-3">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+          <i class="bi bi-list"></i>
+        </button>
+        <h1 class="page-title">{% block page_title %}{{ title }}{% endblock %}</h1>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        {% if user.is_superuser %}
+        <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size:.75rem;">Admin</span>
+        {% endif %}
+        <span class="text-muted" style="font-size:.88rem;">
+          <i class="bi bi-person-circle me-1"></i>{{ user.get_full_name|default:user.username }}
+        </span>
       </div>
     </div>
-  </nav>
-  {% elif user.is_authenticated %}
-  <nav class="navbar navbar-expand-lg bg-light">
-    <div class="container">
-      <a class="navbar-brand" href="{% url 'dash' %}">Dashboard</a>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'products' %}">Products</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'orders' %}">Orders</a>
-          </li>
-        </ul>
-        <ul class="navbar-nav ml-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'user' %}">Profile</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="{% url 'logout' %}">Logout</a>
-          </li>
-        </ul>
+
+    <div class="content-area">
+      {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+        <i
+          class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% elif message.tags == 'danger' %}bi-exclamation-circle-fill{% elif message.tags == 'warning' %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
+      {% endfor %}
+      {% endif %}
+
+      {% block content %}{% endblock %}
     </div>
-  </nav>
-  {% else %}
-  <nav class="navbar navbar-expand-lg bg-light">
-    <div class="container">
-        <ul class="navbar-nav ml-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'register' %}">Register</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="{% url 'login' %}">Login</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-  {% endif %}
-  {% block content %}
-  {% endblock %}
-  <div class="bg-light">
-    <footer class="py-3 my-4">
-      <p class="text-center text-muted">&copy; 2024 Inventory App, Inc.</p>
+
+    <footer class="main-footer">
+      &copy; 2026 InvenTrack &mdash; Inventory Management System
     </footer>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
-    crossorigin="anonymous"></script>
-  
+  </main>
+  {% endblock body %}
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('show');
+      document.getElementById('sidebarOverlay').classList.toggle('show');
+    }
+    setTimeout(function () {
+      document.querySelectorAll('.alert').forEach(function (el) {
+        var alert = bootstrap.Alert.getOrCreateInstance(el);
+        alert.close();
+      });
+    }, 5000);
+  </script>
+  {% block extra_js %}{% endblock %}
 </body>
 
 </html>

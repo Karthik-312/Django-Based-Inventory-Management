@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Suppliers{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <h6 class="fw-semibold mb-0"><i class="bi bi-truck me-2 text-muted"></i>All Suppliers</h6>
+          <form method="GET" class="d-flex gap-2">
+            <div class="search-box">
+              <i class="bi bi-search"></i>
+              <input type="text" name="q" class="form-control form-control-sm" placeholder="Search suppliers..."
+                value="{{ query }}" style="min-width:180px;">
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button>
+          </form>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Supplier Name</th>
+                <th>Contact Person</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Products</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for supplier in suppliers %}
+              <tr>
+                <td>
+                  <div class="fw-medium">{{ supplier.name }}</div>
+                  {% if supplier.address %}
+                  <small class="text-muted">{{ supplier.address|truncatechars:30 }}</small>
+                  {% endif %}
+                </td>
+                <td>{{ supplier.contact_person|default:"-" }}</td>
+                <td>
+                  {% if supplier.email %}
+                  <a href="mailto:{{ supplier.email }}" class="text-decoration-none">{{ supplier.email }}</a>
+                  {% else %}-{% endif %}
+                </td>
+                <td>{{ supplier.phone|default:"-" }}</td>
+                <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ supplier.products.count }}</span></td>
+                <td class="text-end">
+                  <a href="{% url 'supplier-edit' supplier.pk %}" class="btn btn-sm btn-outline-primary me-1"
+                    title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <a href="{% url 'supplier-delete' supplier.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                  <i class="bi bi-truck d-block mb-2" style="font-size:2rem;"></i>
+                  No suppliers found
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% include 'includes/pagination.html' %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3"><i class="bi bi-plus-circle me-2 text-primary"></i>Add New Supplier</h6>
+        <form method="POST">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <button type="submit" class="btn btn-primary w-100 mt-2">
+            <i class="bi bi-plus-lg me-1"></i>Add Supplier
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

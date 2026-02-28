@@ -1,55 +1,103 @@
 {% extends 'base.html' %}
-{% block title %}{{ title }} {% endblock %}
 {% load crispy_forms_tags %}
+{% block title %}Orders{% endblock %}
+
 {% block content %}
-<div class="container">
-  <div class="row">
-    <div class="col-md-8">
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Ordered Product</th>
-            <th scope="col">Created by</th>
-            <th scope="col">Quantity</th>
-            <th scope="col">Order Date</th>
-          </tr>
-        </thead>
-        {% if user.is_staff and user.is_superuser %}
-        <tbody>
-          {% for order in orders %}
-          <tr>
-            <td>{{ order.product }}</td>
-            <td>{{ order.created_by.username }}</td>
-            <td>{{ order.order_quantity }}</td>
-            <td>{{ order.date }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-        {% else %}
-        <tbody>
-          {% for order in orders %}
-          {% if user.username == order.created_by.username %}
-          <tr>
-            <td>{{ order.product }}</td>
-            <td>{{ order.created_by.username }}</td>
-            <td>{{ order.order_quantity }}</td>
-            <td>{{ order.date }}</td>
-          </tr>
-          {% endif %}
-          {% endfor %}
-        </tbody>
-        {% endif %}
-      </table>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <h6 class="fw-semibold mb-0">
+            <i class="bi bi-cart me-2 text-muted"></i>
+            {% if user.is_superuser %}All Orders{% else %}My Orders{% endif %}
+          </h6>
+          <a href="{% url 'export-orders' %}" class="btn btn-sm btn-outline-success" title="Export CSV">
+            <i class="bi bi-download me-1"></i>Export
+          </a>
+        </div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Ordered By</th>
+                <th>Qty</th>
+                <th>Status</th>
+                <th>Date</th>
+                {% if user.is_superuser %}<th class="text-end">Actions</th>{% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in orders %}
+              <tr>
+                <td>
+                  <a href="{% url 'product-detail' order.product.pk %}" class="text-decoration-none">
+                    <i class="bi bi-box me-1 text-muted"></i>{{ order.product }}
+                  </a>
+                </td>
+                <td>{{ order.created_by.get_full_name|default:order.created_by.username }}</td>
+                <td>{{ order.order_quantity }}</td>
+                <td>
+                  {% if user.is_superuser %}
+                  <form method="POST" action="{% url 'order-update-status' order.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <select name="status" class="form-select form-select-sm d-inline-block"
+                      style="width:auto;font-size:.78rem;padding:.2rem .5rem;border-radius:50px;
+                      {% if order.status == 'Approved' %}border-color:#10b981;color:#10b981;{% elif order.status == 'Pending' %}border-color:#f59e0b;color:#92600a;{% elif order.status == 'Delivered' %}border-color:#06b6d4;color:#06b6d4;{% else %}border-color:#ef4444;color:#ef4444;{% endif %}"
+                      onchange="this.form.submit()">
+                      <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                      <option value="Approved" {% if order.status == 'Approved' %}selected{% endif %}>Approved</option>
+                      <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered
+                      </option>
+                      <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled
+                      </option>
+                    </select>
+                  </form>
+                  {% else %}
+                  <span
+                    class="badge badge-status {% if order.status == 'Approved' %}bg-success{% elif order.status == 'Pending' %}bg-warning text-dark{% elif order.status == 'Delivered' %}bg-info{% else %}bg-danger{% endif %}">
+                    {{ order.status }}
+                  </span>
+                  {% endif %}
+                </td>
+                <td class="text-muted">{{ order.date|date:"M d, Y H:i" }}</td>
+                {% if user.is_superuser %}
+                <td class="text-end">
+                  <a href="{% url 'order-delete' order.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </td>
+                {% endif %}
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                  <i class="bi bi-cart d-block mb-2" style="font-size:2rem;"></i>
+                  No orders yet
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% include 'includes/pagination.html' %}
+      </div>
     </div>
-    <div class="col-md-4">
-      <form method="POST">
-        <h4>Create a New Order</h4>
-        <hr>
-        {% csrf_token %}
-        {{ form|crispy}}
-        <br>
-        <button type="submit" class="btn btn-primary">Create Order</button>
-      </form>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3"><i class="bi bi-cart-plus me-2 text-primary"></i>Create New Order</h6>
+        <form method="POST">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <button type="submit" class="btn btn-primary w-100 mt-2">
+            <i class="bi bi-cart-plus me-1"></i>Place Order
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </div>
