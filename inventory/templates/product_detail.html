@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{% url 'products' %}" class="text-decoration-none text-muted" style="font-size:.88rem;">
+    <i class="bi bi-arrow-left me-1"></i>Back to Products
+  </a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3"><i class="bi bi-box me-2 text-primary"></i>Product Info</h6>
+        <div class="mb-3">
+          <small class="text-muted d-block">Name</small>
+          <span class="fw-medium">{{ product.name }}</span>
+        </div>
+        <div class="mb-3">
+          <small class="text-muted d-block">Category</small>
+          <span class="badge bg-primary bg-opacity-10 text-primary">{{ product.category|default:"N/A" }}</span>
+        </div>
+        <div class="mb-3">
+          <small class="text-muted d-block">Quantity in Stock</small>
+          {% if product.quantity <= 10 %}
+          <span class="text-danger fw-bold">{{ product.quantity }}</span>
+          <i class="bi bi-exclamation-circle-fill text-danger ms-1" style="font-size:.8rem;"></i>
+          <small class="text-danger">Low stock</small>
+          {% else %}
+          <span class="fw-semibold">{{ product.quantity }}</span>
+          {% endif %}
+        </div>
+        <div class="mb-3">
+          <small class="text-muted d-block">Total Ordered (all time)</small>
+          <span class="fw-semibold">{{ total_ordered }}</span>
+        </div>
+        <div class="mb-3">
+          <small class="text-muted d-block">Supplier</small>
+          <span>{{ product.supplier.name|default:"None assigned" }}</span>
+        </div>
+        {% if product.description %}
+        <div class="mb-0">
+          <small class="text-muted d-block">Description</small>
+          <span>{{ product.description }}</span>
+        </div>
+        {% endif %}
+
+        {% if user.is_superuser %}
+        <hr>
+        <div class="d-flex gap-2">
+          <a href="{% url 'product-edit' product.pk %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i>Edit
+          </a>
+          <a href="{% url 'product-delete' product.pk %}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-trash me-1"></i>Delete
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3"><i class="bi bi-cart me-2 text-muted"></i>Order History</h6>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Ordered By</th>
+                <th>Qty</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in orders %}
+              <tr>
+                <td>
+                  <i class="bi bi-person me-1 text-muted"></i>
+                  {{ order.created_by.get_full_name|default:order.created_by.username }}
+                </td>
+                <td>{{ order.order_quantity }}</td>
+                <td>
+                  <span
+                    class="badge badge-status {% if order.status == 'Approved' %}bg-success{% elif order.status == 'Pending' %}bg-warning text-dark{% elif order.status == 'Delivered' %}bg-info{% else %}bg-danger{% endif %}">
+                    {{ order.status }}
+                  </span>
+                </td>
+                <td class="text-muted">{{ order.date|date:"M d, Y H:i" }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-4">
+                  <i class="bi bi-cart d-block mb-2" style="font-size:1.5rem;"></i>
+                  No orders for this product yet
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

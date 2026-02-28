@@ -1,48 +1,118 @@
 {% extends 'base.html' %}
-{% block title %}{{ header }} {% endblock %}
 {% load crispy_forms_tags %}
-{% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-8">
-            <table class="table">
-                
-                <thead>
-                    <tr>
-                        <th scope="col">Product Name</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">Category</th>
-                        <th scope="col">Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for product in products %}
-                    <tr>
-                        <td>{{ product.name }}</td>
-                        <td>{{ product.quantity }}</td>
-                        <td>{{ product.category }}</td>
-                        <td>{{ product.description }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% if user.is_staff and user.is_superuser %}
-        <div class="col-md-4">
-            <form method="POST">
-                <h4>Add a New Product</h4>
-                <hr>
-                {% csrf_token %}
-                {{ form|crispy}}
-                <br>
-                <button type="submit" class="btn btn-primary">Add</button>
-            </form>
-        </div>
-        {% else %}
-        <div class="col-md-4">
+{% block title %}Products{% endblock %}
 
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-{% if user.is_superuser %}8{% else %}12{% endif %}">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <h6 class="fw-semibold mb-0"><i class="bi bi-box me-2 text-muted"></i>All Products</h6>
+          <div class="d-flex gap-2 flex-wrap align-items-center">
+            {% if user.is_superuser %}
+            <a href="{% url 'export-products' %}" class="btn btn-sm btn-outline-success" title="Export CSV">
+              <i class="bi bi-download me-1"></i>Export
+            </a>
+            {% endif %}
+            <form method="GET" class="d-flex gap-2 flex-wrap">
+              <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" class="form-control form-control-sm" placeholder="Search products..."
+                  value="{{ query }}" style="min-width:180px;">
+              </div>
+              <select name="category" class="form-select form-select-sm" style="width:auto;"
+                onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                <option value="Stationary" {% if selected_category == 'Stationary' %}selected{% endif %}>Stationary
+                </option>
+                <option value="Electronics" {% if selected_category == 'Electronics' %}selected{% endif %}>Electronics
+                </option>
+                <option value="Food" {% if selected_category == 'Food' %}selected{% endif %}>Food</option>
+                <option value="Sports" {% if selected_category == 'Sports' %}selected{% endif %}>Sports</option>
+              </select>
+              <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button>
+            </form>
+          </div>
         </div>
-        {% endif %}
+
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Supplier</th>
+                <th>Description</th>
+                {% if user.is_superuser %}<th class="text-end">Actions</th>{% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for product in products %}
+              <tr>
+                <td>
+                  <a href="{% url 'product-detail' product.pk %}" class="text-decoration-none fw-medium">
+                    {{ product.name }}
+                  </a>
+                </td>
+                <td>
+                  <span class="badge bg-primary bg-opacity-10 text-primary">{{ product.category }}</span>
+                </td>
+                <td>
+                  {% if product.quantity <= 10 %}
+                  <span class="text-danger fw-semibold">{{ product.quantity }}</span>
+                  <i class="bi bi-exclamation-circle-fill text-danger ms-1" style="font-size:.75rem;"
+                    title="Low stock"></i>
+                  {% else %}
+                  {{ product.quantity }}
+                  {% endif %}
+                </td>
+                <td class="text-muted">{{ product.supplier.name|default:"-" }}</td>
+                <td class="text-muted">{{ product.description|default:"-"|truncatechars:40 }}</td>
+                {% if user.is_superuser %}
+                <td class="text-end">
+                  <a href="{% url 'product-edit' product.pk %}" class="btn btn-sm btn-outline-primary me-1"
+                    title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <a href="{% url 'product-delete' product.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </td>
+                {% endif %}
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                  <i class="bi bi-box d-block mb-2" style="font-size:2rem;"></i>
+                  No products found
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% include 'includes/pagination.html' %}
+      </div>
     </div>
+  </div>
+
+  {% if user.is_superuser %}
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3"><i class="bi bi-plus-circle me-2 text-primary"></i>Add New Product</h6>
+        <form method="POST">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <button type="submit" class="btn btn-primary w-100 mt-2">
+            <i class="bi bi-plus-lg me-1"></i>Add Product
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

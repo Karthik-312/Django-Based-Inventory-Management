@@ -1,19 +1,3 @@
-"""
-URL configuration for myproject project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.contrib.auth import views as auth
 from django.urls import path
@@ -23,12 +7,36 @@ from inventory import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('dash/', views.index, name='dash'),
+    path('', views.index, name='dash'),
+
+    # Products
     path('products/', views.products, name='products'),
+    path('products/<int:pk>/', views.product_detail, name='product-detail'),
+    path('products/<int:pk>/edit/', views.product_edit, name='product-edit'),
+    path('products/<int:pk>/delete/', views.product_delete, name='product-delete'),
+    path('products/export/', views.export_products_csv, name='export-products'),
+
+    # Orders
     path('orders/', views.orders, name='orders'),
+    path('orders/<int:pk>/delete/', views.order_delete, name='order-delete'),
+    path('orders/<int:pk>/status/', views.order_update_status, name='order-update-status'),
+    path('orders/export/', views.export_orders_csv, name='export-orders'),
+
+    # Suppliers
+    path('suppliers/', views.suppliers, name='suppliers'),
+    path('suppliers/<int:pk>/edit/', views.supplier_edit, name='supplier-edit'),
+    path('suppliers/<int:pk>/delete/', views.supplier_delete, name='supplier-delete'),
+
+    # Users & Profile
     path('users/', views.users, name='users'),
     path('user/', views.user, name='user'),
+    path('password/', views.password_change, name='password-change'),
+
+    # Activity Log
+    path('activity/', views.activity_log, name='activity-log'),
+
+    # Auth
     path('register/', views.register, name='register'),
-    path('', auth.LoginView.as_view(template_name='login.html'), name='login'),
-    path('logout/', auth.LogoutView.as_view(template_name='logout.html'), name='logout')
+    path('login/', auth.LoginView.as_view(template_name='login.html'), name='login'),
+    path('logout/', auth.LogoutView.as_view(template_name='logout.html'), name='logout'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
